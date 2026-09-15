@@ -1,5 +1,17 @@
 # Laboratory Asset System
 
+ ## Administrator
+Email: admin@lab.com
+Password: Admin123!
+
+## Laboratory Staff
+Email: staff@lab.com
+Password: Staff123!
+
+## Requester
+Email: requester@lab.com
+Password: Requester123!
+
 A static HTML/CSS/JavaScript starter for managing laboratory equipment, borrowing, returns, maintenance, and audit activity.
 
 ## Run locally
