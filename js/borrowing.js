@@ -84,6 +84,7 @@ async function loadAvailableEquipment() {
 
 async function submitRequest(event) {
   event.preventDefault();
+  const form = event.currentTarget;
   const profile = await getCurrentProfile();
   if (!profile) return;
   const equipmentId = document.querySelector("#equipment").value;
@@ -121,7 +122,7 @@ async function submitRequest(event) {
     "Submitted borrowing request",
   );
   setPageMessage("#request-message", "Request submitted as Pending.");
-  event.currentTarget.reset();
+  form.reset();
 }
 
 async function loadBorrowingPage(mode) {
@@ -184,33 +185,52 @@ async function loadBorrowingPage(mode) {
   document
     .querySelectorAll('[data-action="damage"]')
     .forEach((button) =>
-      button.addEventListener("click", () =>
-        returnEquipment(button.dataset.id, true),
-      ),
+      button.addEventListener("click", () => openDamageDialog(button.dataset.id)),
     );
+}
+
+function openDamageDialog(requestId) {
+  document.querySelector("#damage-dialog")?.remove();
+  const dialog = document.createElement("div");
+  dialog.id = "damage-dialog";
+  dialog.className = "damage-dialog-backdrop";
+  dialog.innerHTML = `<form class="panel stack-form damage-dialog" id="damage-form"><h3>Return equipment as damaged</h3><label>Priority<select name="priority" required><option value="Low">Low</option><option value="Normal">Normal</option><option value="High" selected>High</option><option value="Urgent">Urgent</option></select></label><label>Damage description<textarea name="description" rows="4" required></textarea></label><div class="damage-dialog-actions"><button type="button" class="button button-danger" id="cancel-damage">Cancel</button><button type="submit" class="button button-primary">Confirm damaged return</button></div></form>`;
+  document.body.appendChild(dialog);
+  document.querySelector("#cancel-damage").addEventListener("click", () => dialog.remove());
+  document.querySelector("#damage-form").addEventListener("submit", (event) => {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    dialog.remove();
+    returnEquipment(
+      requestId,
+      true,
+      formData.get("description").trim(),
+      formData.get("priority"),
+    );
+  });
 }
 
 function borrowingActions(request, role) {
   const actions = [];
   if (role === "administrator" && request.status === "Pending")
     actions.push(
-      `<button class="button button-primary" data-action="approve" data-id="${request.id}">Approve</button>`,
-      `<button class="button button-danger" data-action="reject" data-id="${request.id}">Reject</button>`,
+      `<button type="button" class="button button-primary" data-action="approve" data-id="${request.id}">Approve</button>`,
+      `<button type="button" class="button button-danger" data-action="reject" data-id="${request.id}">Reject</button>`,
     );
   if (
     (role === "administrator" || role === "laboratory_staff") &&
     request.status === "Approved"
   )
     actions.push(
-      `<button class="button button-primary" data-action="release" data-id="${request.id}">Release</button>`,
+      `<button type="button" class="button button-primary" data-action="release" data-id="${request.id}">Release</button>`,
     );
   if (
     (role === "administrator" || role === "laboratory_staff") &&
     request.status === "Released"
   )
     actions.push(
-      `<button class="button button-primary" data-action="return" data-id="${request.id}">Return</button>`,
-      `<button class="button button-danger" data-action="damage" data-id="${request.id}">Damaged</button>`,
+      `<button type="button" class="button button-primary" data-action="return" data-id="${request.id}">Return</button>`,
+      `<button type="button" class="button button-danger" data-action="damage" data-id="${request.id}">Damaged</button>`,
     );
   return actions.join(" ") || "-";
 }
@@ -248,7 +268,12 @@ async function releaseEquipment(requestId) {
   window.location.reload();
 }
 
-async function returnEquipment(requestId, damaged = false) {
+async function returnEquipment(
+  requestId,
+  damaged = false,
+  damageDescription = "",
+  damagePriority = "High",
+) {
   const profile = await getCurrentProfile();
   if (!profile || !["administrator", "laboratory_staff"].includes(profile.role))
     return showMessage("Access denied.");
@@ -263,7 +288,13 @@ async function returnEquipment(requestId, damaged = false) {
   const timestamp = new Date().toISOString();
   const { error: requestError } = await supabaseClient
     .from("borrowing_requests")
-    .update({ status: "Returned", returned_at: timestamp })
+    .update({
+      status: "Returned",
+      returned_at: timestamp,
+      remarks: damaged
+        ? `Returned damaged: ${damageDescription}`
+        : request.remarks,
+    })
     .eq("id", requestId)
     .eq("status", "Released");
   if (requestError) return showMessage(requestError.message);
@@ -272,6 +303,26 @@ async function returnEquipment(requestId, damaged = false) {
     .update({ status: damaged ? "Damaged" : "Available" })
     .eq("id", request.equipment_id);
   if (equipmentError) return showMessage(equipmentError.message);
+  if (damaged) {
+    const { data: maintenanceRequest, error: maintenanceError } =
+      await supabaseClient
+        .from("maintenance_requests")
+        .insert({
+          equipment_id: request.equipment_id,
+          requested_by: profile.id,
+          problem_description: `Damage reported from borrowing request #${requestId}: ${damageDescription}`,
+          priority: damagePriority,
+        })
+        .select()
+        .single();
+    if (maintenanceError) return showMessage(maintenanceError.message);
+    await createAuditLog(
+      "CREATED",
+      "Maintenance",
+      maintenanceRequest.id,
+      `Created from damaged return for borrowing request #${requestId}`,
+    );
+  }
   await createAuditLog(
     "RETURNED",
     "Borrowing",

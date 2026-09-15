@@ -337,6 +337,25 @@ tr:last-child td {
 .error-message {
   color: var(--danger);
 }
+.damage-dialog-backdrop {
+  align-items: center;
+  background: rgba(23, 44, 44, 0.42);
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  padding: 1rem;
+  position: fixed;
+  z-index: 10;
+}
+.damage-dialog {
+  max-width: 520px;
+  width: 100%;
+}
+.damage-dialog-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+}
 
 .request-intro {
   align-items: end;

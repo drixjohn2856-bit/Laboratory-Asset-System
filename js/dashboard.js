@@ -72,11 +72,26 @@ async function renderDashboard() {
     ).length || 0;
 
   document.querySelector("#app-shell").innerHTML =
-    `<aside class="sidebar"><p class="brand">Lab Asset System</p><span class="nav-label">Workspace</span><nav class="nav">${links}</nav></aside><main class="main-content"><header class="topbar"><h1>${roleLabel} dashboard</h1><span class="user-menu">${profile.full_name || profile.email} · <a href="#" id="sign-out">Sign out</a></span></header><section class="content"><div class="page-heading"><div><p class="eyebrow">Today at the lab</p><h2>Good morning</h2><p class="dashboard-intro">Here is the current state of your laboratory assets.</p></div></div><div class="stat-grid"><article class="stat-card metric-accent"><span class="muted">Available assets</span><strong>${availableAssets}</strong></article><article class="stat-card metric-accent"><span class="muted">Active loans</span><strong>${activeLoans}</strong></article><article class="stat-card metric-accent warning"><span class="muted">Overdue loans</span><strong>${overdueLoans}</strong></article><article class="stat-card metric-accent danger"><span class="muted">Open issues</span><strong>${openIssues}</strong></article></div></section></main>`;
+    `<aside class="sidebar"><p class="brand">Lab Asset System</p><span class="nav-label">Workspace</span><nav class="nav">${links}</nav></aside><main class="main-content"><header class="topbar"><h1>${roleLabel} dashboard</h1><span class="user-menu">${escapeHtml(profile.full_name || profile.email || "User")} <button type="button" class="button button-danger" id="sign-out">Sign out</button></span></header><section class="content"><div class="page-heading"><div><p class="eyebrow">Today at the lab</p><h2 id="greeting"></h2><p class="dashboard-intro">Here is the current state of your laboratory assets.</p></div></div><div class="stat-grid"><article class="stat-card metric-accent"><span class="muted">Available assets</span><strong>${availableAssets}</strong></article><article class="stat-card metric-accent"><span class="muted">Active loans</span><strong>${activeLoans}</strong></article><article class="stat-card metric-accent warning"><span class="muted">Overdue loans</span><strong>${overdueLoans}</strong></article><article class="stat-card metric-accent danger"><span class="muted">Open issues</span><strong>${openIssues}</strong></article></div></section></main>`;
+  updateGreeting(profile.full_name || profile.email || "User");
+  setInterval(() => updateGreeting(profile.full_name || profile.email || "User"), 60000);
   document.querySelector("#sign-out")?.addEventListener("click", (event) => {
     event.preventDefault();
     signOut();
   });
+}
+
+function updateGreeting(name) {
+  const greeting = document.querySelector("#greeting");
+  if (!greeting) return;
+  const hour = new Date().getHours();
+  const period =
+    hour >= 5 && hour < 12
+      ? "Morning"
+      : hour >= 12 && hour < 18
+        ? "Afternoon"
+        : "Evening";
+  greeting.textContent = `Good ${period}, ${name}!`;
 }
 
 renderDashboard();

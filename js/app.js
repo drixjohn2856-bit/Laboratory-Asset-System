@@ -48,7 +48,7 @@ function renderPageShell(profile, title, content) {
         `<a href="${href}" class="${href === currentPage ? "active" : ""}">${label}</a>`,
     )
     .join("");
-  document.body.innerHTML = `<div class="app-shell"><aside class="sidebar"><p class="brand">Lab Asset System</p><span class="nav-label">Workspace</span><nav class="nav">${links}</nav></aside><main class="main-content"><header class="topbar"><h1>${title}</h1><span class="user-menu">${escapeHtml(profile.full_name || profile.email || "User")} · <a href="#" id="sign-out">Sign out</a></span></header><section class="content">${content}</section></main></div>`;
+  document.body.innerHTML = `<div class="app-shell"><aside class="sidebar"><p class="brand">Lab Asset System</p><span class="nav-label">Workspace</span><nav class="nav">${links}</nav></aside><main class="main-content"><header class="topbar"><h1>${title}</h1><span class="user-menu">${escapeHtml(profile.full_name || profile.email || "User")} <button type="button" class="button button-danger" id="sign-out">Sign out</button></span></header><section class="content">${content}</section></main></div>`;
   document
     .querySelector("#sign-out")
     ?.addEventListener("click", async (event) => {
