@@ -204,3 +204,5 @@ npx prettier --check "**/*.{html,css,js}"
 ```
 
 The final Supabase transaction tests must be run in the configured project after executing [database/schema.sql](database/schema.sql), creating Auth users, and assigning profile roles.
+#   L a b o r a t o r y - A s s e t - S y s t e m  
+ 
