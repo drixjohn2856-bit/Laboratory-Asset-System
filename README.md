@@ -12,7 +12,7 @@ Password: Staff123!
 Email: requester@lab.com
 Password: Requester123!
 
-A static HTML/CSS/JavaScript starter for managing laboratory equipment, borrowing, returns, maintenance, and audit activity.
+A static HTML/CSS/JavaScript application for managing laboratory equipment, borrowing, returns, maintenance, and audit activity.
 
 ## Run locally
 
@@ -22,7 +22,7 @@ Open `index.html` in a browser, or serve the folder with any static web server. 
 
 - `admin/`: administrator views for users, inventory, borrowing, maintenance, reporting, and audit logs.
 - `staff/`: day-to-day equipment circulation and maintenance views.
-- `requester/`: equipment discovery, requests, and request history.
+- `requester/`: equipment discovery, borrowing requests, and request history.
 - `css/`: shared, login, and dashboard styles.
 - `js/`: authentication, route guard, dashboard, and feature-module placeholders.
 
@@ -48,13 +48,14 @@ The schema starts with `drop table ... cascade` statements because it is designe
 | Approve or reject requests | Yes | No | No |
 | Release approved equipment | Yes | Yes | No |
 | Process equipment returns | Yes | Yes | No |
-| Create maintenance request | Yes | Yes | No |
+| Manage maintenance requests | Yes | Yes | No |
+| Report damage on an active loan | Yes | Yes | Yes |
 | Complete maintenance request | Yes | Yes | No |
 | View request history | Yes | Yes | Own requests |
 | View audit logs | Yes | No | No |
 | Manage user profiles | Yes | No | No |
 
-\* The interface permits request creation for authenticated users, while the database requires `requester_id = auth.uid()`.
+\* Maintenance requests are created automatically when staff or administrators confirm a damaged return. Requesters can report damage from an active loan in their request history, but they cannot open the Maintenance page or complete maintenance.
 
 ## 5. Updated ERD
 
@@ -168,10 +169,13 @@ flowchart TD
 7. Only requests with status `Approved` may move to `Released`.
 8. Releasing equipment changes its equipment status to `Borrowed`.
 9. Only requests with status `Released` may be returned.
-10. A normal return changes equipment status to `Available`; a damaged return changes it to `Damaged`.
-11. Maintenance statuses are `Pending`, `In Progress`, `Completed`, or `Cancelled`.
-12. Audit records identify the acting user, action, module, record, description, and timestamp.
-13. Row Level Security is the final authorization layer; client-side role checks are not a substitute for RLS.
+10. A normal return changes equipment status to `Available`; a damaged return changes the borrowing request to `Returned` and equipment to `Damaged`.
+11. A confirmed damaged return creates a maintenance request with the selected priority and damage description.
+12. Only administrators and laboratory staff can view or complete maintenance requests.
+13. Completing maintenance changes the related equipment status to `Available`, enforced by both the client flow and a database trigger.
+14. Maintenance statuses are `Pending`, `In Progress`, `Completed`, or `Cancelled`.
+15. Audit records identify the acting user, action, module, record, description, and timestamp.
+16. Row Level Security is the final authorization layer; client-side role checks are not a substitute for RLS.
 
 ## 9. Audit-Log Screenshot
 
@@ -192,7 +196,8 @@ Open the page after signing in as an administrator and capture the rendered **Sy
 | Approve or reject request | Administrator action updates request and creates audit entry | Implemented; requires administrator profile and RLS |
 | Release equipment | Approved request becomes `Released`; equipment becomes `Borrowed` | Implemented; requires staff/admin profile and RLS |
 | Return equipment | Request becomes `Returned`; equipment becomes `Available` or `Damaged` | Implemented; requires staff/admin profile and RLS |
-| Maintenance workflow | Create and complete maintenance records | Implemented; requires staff/admin profile and RLS |
+| Damaged return | Confirmation form captures priority and description, then creates a maintenance request | Implemented; requires staff/admin profile and RLS |
+| Maintenance workflow | Staff/admin view requests; completion makes equipment available automatically | Implemented; requires configured Supabase policies and trigger |
 | Audit-log page | Administrator sees audit events | Implemented; requires administrator profile and RLS |
 | Route structure check | No duplicate HTML documents or missing primary routes | Passed |
 
@@ -204,5 +209,3 @@ npx prettier --check "**/*.{html,css,js}"
 ```
 
 The final Supabase transaction tests must be run in the configured project after executing [database/schema.sql](database/schema.sql), creating Auth users, and assigning profile roles.
-#   L a b o r a t o r y - A s s e t - S y s t e m  
- 
