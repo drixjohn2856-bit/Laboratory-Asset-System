@@ -1,0 +1,93 @@
+.login-page {
+  align-items: center;
+  background:
+    radial-gradient(circle at top right, #d5ece7, transparent 36%), var(--paper);
+  display: flex;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 1.5rem;
+}
+.login-page {
+  align-items: stretch;
+  background:
+    linear-gradient(120deg, rgba(7, 83, 79, 0.97), rgba(11, 128, 116, 0.88)),
+    var(--teal-dark);
+  display: flex;
+  justify-content: center;
+  min-height: 100vh;
+  overflow: hidden;
+  padding: 2rem;
+  position: relative;
+}
+
+.login-page::before,
+.login-page::after {
+  border: 1px solid rgba(214, 239, 145, 0.35);
+  border-radius: 50%;
+  content: "";
+  height: 420px;
+  position: absolute;
+  width: 420px;
+}
+
+.login-page::before {
+  left: -190px;
+  top: -160px;
+}
+
+.login-page::after {
+  bottom: -240px;
+  right: -100px;
+}
+
+.login-card {
+  align-self: center;
+  background: var(--surface);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 18px;
+  box-shadow: 0 30px 70px rgba(4, 44, 43, 0.3);
+  max-width: 460px;
+  padding: clamp(2rem, 6vw, 4rem);
+  position: relative;
+  width: 100%;
+  z-index: 1;
+}
+
+.login-card::before {
+  background: var(--lime);
+  border-radius: 50%;
+  content: "";
+  height: 10px;
+  left: 2rem;
+  position: absolute;
+  top: 2rem;
+  width: 10px;
+}
+
+.login-card h1 {
+  font-size: clamp(2.4rem, 8vw, 4.4rem);
+  letter-spacing: -0.08em;
+  line-height: 0.9;
+  margin: 1.4rem 0 1rem;
+  max-width: 8ch;
+}
+
+.login-card .muted {
+  line-height: 1.6;
+  max-width: 32ch;
+}
+
+.login-card .stack-form {
+  margin-top: 2.2rem;
+}
+
+.login-card .button {
+  margin-top: 0.5rem;
+  min-height: 48px;
+}
+
+.login-card .form-hint {
+  font-size: 0.8rem;
+  margin-bottom: 0;
+  text-align: left;
+}
