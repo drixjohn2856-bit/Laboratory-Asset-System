@@ -32,7 +32,7 @@ The schema starts with `drop table ... cascade` statements because it is designe
 |---|:---:|:---:|:---:|
 | View available equipment | Yes | Yes | Yes |
 | Add or delete equipment | Yes | No | No |
-| Submit borrowing request | Yes* | Yes* | Yes |
+| Submit borrowing request | Yes | Yes | Yes |
 | Approve or reject requests | Yes | No | No |
 | Release approved equipment | Yes | Yes | No |
 | Process equipment returns | Yes | Yes | No |
@@ -163,9 +163,7 @@ flowchart TD
 
 ## 9. Audit-Log Screenshot
 
-The administrator audit-log evidence page is available at:
-
-`http://localhost:5500/admin/audit-logs`
+![Audit Logs](audit_log.png)
 
 Open the page after signing in as an administrator and capture the rendered **System activity** table. The page displays the event date, user, action, module, description, event count, and live-log status. The underlying implementation is in [admin/audit-logs.html](admin/audit-logs.html), [js/audit.js](js/audit.js), and [css/audit.css](css/audit.css).
 
